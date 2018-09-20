@@ -126,22 +126,25 @@ def predict_frame(data, model):
 
 
 def draw_bb(frame, optface):
-    left, up, right, down = optface
+    # left, up, right, down = optface
+    up, left, down, right = optface
+    up -= 1
+    left -= 1
+    down -= 1
+    right -= 1
+    print(optface)
+    print(frame.shape)
 
-    frame[up, left:right] = [0, 255, 0]
-    frame[down, left:right] = [0, 255, 0]
-    frame[up:down, left] = [0, 255, 0]
-    frame[up:down, right] = [0, 255, 0]
+    try:
+        # frame[up, left:right] = [0, 255, 0]
+        # frame[down, left:right] = [0, 255, 0]
+        # frame[up:down, left] = [0, 255, 0]
+        # frame[up:down, right] = [0, 255, 0]
+        frame[left:right, up] = [0, 255, 0]
+        frame[left:right, down] = [0, 255, 0]
+        frame[left, up:down] = [0, 255, 0]
+        frame[right, up:down] = [0, 255, 0]
+    except IndexError:
+        print('hm')
 
-
-    # frame[y, x] = [0, 255, 0]  # OG
-    # # surround
-    # frame[y - 1, x] = [0, 255, 0]
-    # frame[y - 1, x + 1] = [0, 255, 0]
-    # frame[y, x + 1] = [0, 255, 0]
-    # frame[y + 1, x + 1] = [0, 255, 0]
-    # frame[y + 1, x] = [0, 255, 0]
-    # frame[y + 1, x - 1] = [0, 255, 0]
-    # frame[y, x - 1] = [0, 255, 0]
-    # frame[y - 1, x - 1] = [0, 255, 0]
     return frame
