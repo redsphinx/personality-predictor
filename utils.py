@@ -50,20 +50,23 @@ def find_face_simple(image):
 
 
 def grab_face(frame):
-    w = 480
-    h = 640
+    w = 640
+    h = 480
     good_shape = (256, 256, 3)
 
-    optface = find_face_simple(frame)
+    optface = find_face_simple(frame) # left, up, right, down = optface
+
     if optface is not None:
+        print('before ', optface)
         if optface[3] > h:
             optface[3] = h
         if optface[2] > w:
             optface[2] = w
         if optface[1] < 0:
-            optface[1] = 0
+            optface[1] = 1
         if optface[0] < 0:
-            optface[0] = 0
+            optface[0] = 1
+        print('after', optface)
 
         image = np.transpose(frame[0], (1, 2, 0)).astype(np.uint8)
         img = Image.fromarray(image, mode='RGB')
@@ -77,7 +80,13 @@ def grab_face(frame):
         if img.shape != good_shape:
             px_mean = np.sum(img, 0)
             px_mean = np.sum(px_mean, 0)
-            px_mean /= (img.shape[0] * img.shape[1])
+            # TODO IndexError: tuple index out of range
+            try:
+                px_mean /= (img.shape[0] * img.shape[1])
+                # print(type(px_mean), px_mean)
+            except IndexError:
+                print(img.shape)
+                print('hmm')
 
             # px_mean = np.mean(img, 2)
             # px_mean = np.mean(px_mean, 2)
@@ -100,7 +109,7 @@ def grab_face(frame):
             try:
                 canvas[0:img.shape[0], 0:img.shape[1]] = img
             except ValueError:
-                print('hmm')
+                print('weird canvas pasting valueerror')
 
             img = canvas.astype(np.uint8)
 
@@ -121,30 +130,30 @@ def predict_frame(data, model):
     data = data.astype(np.float32)
     with chainer.using_config('train', False):
         p = model(data)
-        print(p)
+        # print(p)
     return p, bb
 
 
 def draw_bb(frame, optface):
-    # left, up, right, down = optface
-    up, left, down, right = optface
+    left, up, right, down = optface
+    # up, left, down, right = optface
     up -= 1
     left -= 1
     down -= 1
     right -= 1
-    print(optface)
-    print(frame.shape)
+    # print(optface)
+    # print(frame.shape)
 
     try:
-        # frame[up, left:right] = [0, 255, 0]
-        # frame[down, left:right] = [0, 255, 0]
-        # frame[up:down, left] = [0, 255, 0]
-        # frame[up:down, right] = [0, 255, 0]
-        frame[left:right, up] = [0, 255, 0]
-        frame[left:right, down] = [0, 255, 0]
-        frame[left, up:down] = [0, 255, 0]
-        frame[right, up:down] = [0, 255, 0]
+        frame[up, left:right] = [0, 255, 0]
+        frame[down, left:right] = [0, 255, 0]
+        frame[up:down, left] = [0, 255, 0]
+        frame[up:down, right] = [0, 255, 0]
+        # frame[left:right, up] = [0, 255, 0]
+        # frame[left:right, down] = [0, 255, 0]
+        # frame[left, up:down] = [0, 255, 0]
+        # frame[right, up:down] = [0, 255, 0]
     except IndexError:
-        print('hm')
+        print('weird frame drawing indexerror')
 
     return frame

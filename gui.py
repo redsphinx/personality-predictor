@@ -17,11 +17,11 @@ def initialize(b):
     b.run_button = Button(b.root, text='Run', state='active', command=lambda: run(b))
     b.model = load_model()
 
-    b.label_e = Label(b.root, text='friendly')
-    b.label_a = Label(b.root, text='authentic')
-    b.label_c = Label(b.root, text='organized')
-    b.label_s = Label(b.root, text='comfortable')
-    b.label_o = Label(b.root, text='imaginative')
+    b.label_e = Label(b.root, text='extraversion') # extraversion friendly
+    b.label_a = Label(b.root, text='agreeableness') # agreeableness authentic
+    b.label_c = Label(b.root, text='conscientiousness') # conscientiousness organized
+    b.label_s = Label(b.root, text='stability') # stability comfortable
+    b.label_o = Label(b.root, text='openness') # openness imaginative
 
 
 def create_window(gv):
