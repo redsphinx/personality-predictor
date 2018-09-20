@@ -3,7 +3,7 @@ from gui_var import GuiVar
 import cv2 as cv
 from PIL import ImageTk, Image
 import numpy as np
-from utils import load_model, predict_frame
+from utils import load_model, predict_frame, draw_bb
 import plotting
 
 
@@ -44,17 +44,18 @@ def main_loop(gv):
     ret, frame = cap.read()
     frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
 
-    img1 = Image.fromarray(frame, 'RGB')
-    img2 = ImageTk.PhotoImage(img1)
-    # TODO: here add face BB overlay, but this happens after prediction, rearrange orders
-    gv.camera_image = img2
-    gv.camera.config(image=gv.camera_image)
-
     f = frame.astype(np.float32)
     f = np.transpose(f, (2, 0, 1))
     f = np.expand_dims(f, 0)
 
-    y = predict_frame(f, gv.model)
+    y, bb = predict_frame(f, gv.model)
+    if bb is not None:
+        frame = draw_bb(frame, bb)
+
+    img1 = Image.fromarray(frame, 'RGB')
+    img2 = ImageTk.PhotoImage(img1)
+    gv.camera_image = img2
+    gv.camera.config(image=gv.camera_image)
 
     gv.series_e = plotting.update_series(gv.series_e, y[0].data[0])
     gv.series_a = plotting.update_series(gv.series_a, y[0].data[1])
@@ -65,7 +66,6 @@ def main_loop(gv):
     loc = plotting.make_plot(gv)
     gv.trait_image_all = PhotoImage(file=loc)
     gv.trait_all.config(image=gv.trait_image_all)
-
 
 
 def start_everything(gv):

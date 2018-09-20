@@ -85,12 +85,22 @@ def grab_face(frame):
             canvas = np.ones(good_shape, dtype=img.dtype) * px_mean.astype(np.uint8)
 
             img2 = Image.fromarray(img, mode='RGB')
-            resize_factor = 256. / img.shape[0]
-            n_h = int(img.shape[1] * resize_factor) - 1
-            img = img2.resize((256, n_h))
-            img = np.array(img)
 
-            canvas[0:img.shape[0], 0:img.shape[1]] = img
+            if img.shape[0] > img.shape[1]:
+                resize_factor = 256. / img.shape[0]
+                n_h = int(img.shape[1] * resize_factor) - 1
+                img = img2.resize((256, n_h))
+                img = np.array(img)
+            else:
+                resize_factor = 256. / img.shape[1]
+                n_w = int(img.shape[0] * resize_factor) - 1
+                img = img2.resize((n_w, 256))
+                img = np.array(img)
+
+            try:
+                canvas[0:img.shape[0], 0:img.shape[1]] = img
+            except ValueError:
+                print('hmm')
 
             img = canvas.astype(np.uint8)
 
@@ -99,12 +109,39 @@ def grab_face(frame):
     else:
         # just black image
         image = np.zeros(good_shape, dtype=frame.dtype)
+        image = np.transpose(image, (2, 0, 1))
+        image = np.expand_dims(image, 0)
+        print('no face')
 
-    return image
+    return image, optface
 
 
 def predict_frame(data, model):
-    data = grab_face(data).astype(np.float32)
+    data, bb = grab_face(data)
+    data = data.astype(np.float32)
     with chainer.using_config('train', False):
         p = model(data)
-    return p
+        print(p)
+    return p, bb
+
+
+def draw_bb(frame, optface):
+    left, up, right, down = optface
+
+    frame[up, left:right] = [0, 255, 0]
+    frame[down, left:right] = [0, 255, 0]
+    frame[up:down, left] = [0, 255, 0]
+    frame[up:down, right] = [0, 255, 0]
+
+
+    # frame[y, x] = [0, 255, 0]  # OG
+    # # surround
+    # frame[y - 1, x] = [0, 255, 0]
+    # frame[y - 1, x + 1] = [0, 255, 0]
+    # frame[y, x + 1] = [0, 255, 0]
+    # frame[y + 1, x + 1] = [0, 255, 0]
+    # frame[y + 1, x] = [0, 255, 0]
+    # frame[y + 1, x - 1] = [0, 255, 0]
+    # frame[y, x - 1] = [0, 255, 0]
+    # frame[y - 1, x - 1] = [0, 255, 0]
+    return frame
