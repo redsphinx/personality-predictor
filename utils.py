@@ -68,7 +68,7 @@ def grab_face(frame):
     # save image to see if good
     # img.save('/home/gabras/deployed/deepimpression2/chalearn30/crops/crop_bg.jpg')
     img = np.array(img)
-    
+
     # if image is not square, fill bottom with mean of face
     if img.shape != good_shape:
         px_mean = np.mean(img, 2)
