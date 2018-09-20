@@ -46,6 +46,7 @@ def main_loop(gv):
 
     img1 = Image.fromarray(frame, 'RGB')
     img2 = ImageTk.PhotoImage(img1)
+    # TODO: here add face BB overlay, but this happens after prediction, rearrange orders
     gv.camera_image = img2
     gv.camera.config(image=gv.camera_image)
 

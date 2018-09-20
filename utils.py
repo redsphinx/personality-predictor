@@ -36,8 +36,11 @@ def find_largest_face(face_rectangles):
 
 def find_face_simple(image):
     detector = dlib.get_frontal_face_detector()
+    image = np.transpose(image, (0, 2, 3, 1))[0]
+    # img = Image.fromarray(image[0], mode='RGB')
+    # gray = img.convert('LA')
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    face_rectangles = detector(gray, 2)
+    face_rectangles = detector(gray.astype(np.uint8), 2)
     if len(face_rectangles) == 0:
         return None
     largest_face_rectangle = find_largest_face(face_rectangles)
@@ -47,9 +50,9 @@ def find_face_simple(image):
 
 
 def grab_face(frame):
-    w = 456
-    h = 256
-    good_shape = (w, h, 3)
+    w = 480
+    h = 640
+    good_shape = (256, 256, 3)
 
     optface = find_face_simple(frame)
     if optface is not None:
@@ -62,31 +65,46 @@ def grab_face(frame):
         if optface[0] < 0:
             optface[0] = 0
 
-    image = np.transpose(frame[0], (1, 2, 0))
-    img = Image.fromarray(image, mode='RGB')
-    img = img.crop(optface)  # left, upper, right, and lower
-    # save image to see if good
-    # img.save('/home/gabras/deployed/deepimpression2/chalearn30/crops/crop_bg.jpg')
-    img = np.array(img)
+        image = np.transpose(frame[0], (1, 2, 0)).astype(np.uint8)
+        img = Image.fromarray(image, mode='RGB')
+        img = img.crop(optface)  # left, upper, right, and lower
+        # img.save('eee.jpg')
+        # save image to see if good
+        # img.save('/home/gabras/deployed/deepimpression2/chalearn30/crops/crop_bg.jpg')
+        img = np.array(img)
 
-    # if image is not square, fill bottom with mean of face
-    if img.shape != good_shape:
-        px_mean = np.mean(img, 2)
-        px_mean = np.mean(px_mean, 2)
+        # if image is not square, fill bottom with mean of face
+        if img.shape != good_shape:
+            px_mean = np.sum(img, 0)
+            px_mean = np.sum(px_mean, 0)
+            px_mean /= (img.shape[0] * img.shape[1])
 
-        canvas = np.ones(good_shape, dtype=img.dtype) * px_mean
-        canvas[0:img.shape[0], 0:img.shape[1]] = img
+            # px_mean = np.mean(img, 2)
+            # px_mean = np.mean(px_mean, 2)
 
-        img = canvas
+            canvas = np.ones(good_shape, dtype=img.dtype) * px_mean.astype(np.uint8)
 
-    image = np.transpose(img, (2, 0, 1))
-    image = np.expand_dims(image, 0)
+            img2 = Image.fromarray(img, mode='RGB')
+            resize_factor = 256. / img.shape[0]
+            n_h = int(img.shape[1] * resize_factor) - 1
+            img = img2.resize((256, n_h))
+            img = np.array(img)
+
+            canvas[0:img.shape[0], 0:img.shape[1]] = img
+
+            img = canvas.astype(np.uint8)
+
+        image = np.transpose(img, (2, 0, 1))
+        image = np.expand_dims(image, 0)
+    else:
+        # just black image
+        image = np.zeros(good_shape, dtype=frame.dtype)
 
     return image
 
 
 def predict_frame(data, model):
-    data = grab_face(data)
+    data = grab_face(data).astype(np.float32)
     with chainer.using_config('train', False):
         p = model(data)
     return p
