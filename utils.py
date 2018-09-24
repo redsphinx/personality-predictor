@@ -57,7 +57,7 @@ def grab_face(frame):
     optface = find_face_simple(frame) # left, up, right, down = optface
 
     if optface is not None:
-        print('before ', optface)
+        # print('before ', optface)
         if optface[3] > h:
             optface[3] = h
         if optface[2] > w:
@@ -66,7 +66,7 @@ def grab_face(frame):
             optface[1] = 1
         if optface[0] < 0:
             optface[0] = 1
-        print('after', optface)
+        # print('after', optface)
 
         image = np.transpose(frame[0], (1, 2, 0)).astype(np.uint8)
         img = Image.fromarray(image, mode='RGB')
