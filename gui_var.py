@@ -2,7 +2,7 @@ from Tkinter import Button, Label, PhotoImage, Tk
 import numpy as np
 
 series_length = 100
-trait_image = '/home/gabi/PycharmProjects/visualizing-traits/src/standalone_demo/media/traits_tmp.png'
+trait_image = 'media/traits_tmp.png'
 
 
 class GuiVar(object):
@@ -13,7 +13,7 @@ class GuiVar(object):
         self._window_height = 500 + 300
         self._window_position = 200
 
-        self._camera_image = PhotoImage(file='/home/gabi/PycharmProjects/visualizing-traits/src/standalone_demo/media/eye.png')
+        self._camera_image = PhotoImage(file='media/eye.png')
         self._camera = None
 
         self._trait_image_all = PhotoImage(file=trait_image)

@@ -9,7 +9,7 @@ from PIL import Image
 def load_model():
     model = Deepimpression()
     # load weights from epoch_29_34
-    p = '/home/gabi/PycharmProjects/visualizing-traits/src/standalone_demo/media/epoch_29_34'
+    p = 'media/epoch_29_34'
     chainer.serializers.load_npz(p, model)
     return model
 
@@ -80,7 +80,6 @@ def grab_face(frame):
         if img.shape != good_shape:
             px_mean = np.sum(img, 0)
             px_mean = np.sum(px_mean, 0)
-            # TODO IndexError: tuple index out of range
             try:
                 px_mean /= (img.shape[0] * img.shape[1])
                 # print(type(px_mean), px_mean)
