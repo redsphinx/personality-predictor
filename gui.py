@@ -1,10 +1,13 @@
 from Tkinter import Button, Label, PhotoImage, Tk
 from gui_var import GuiVar
-import cv2 as cv
+import cv2 #as cv
 from PIL import ImageTk, Image
 import numpy as np
 from utils import load_model, predict_frame, draw_bb
 import plotting
+import time
+import constants
+import constants
 
 
 def initialize(b):
@@ -40,18 +43,22 @@ def create_window(gv):
 
 
 def main_loop(gv):
-    cap = cv.VideoCapture(0)
     ret, frame = cap.read()
-    frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-    f = frame.astype(np.float32)
-    f = np.transpose(f, (2, 0, 1))
-    f = np.expand_dims(f, 0)
+    if constants.face_algo == 'dlib':
+        # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        f = frame.astype(np.float32)
+        f = np.transpose(f, (2, 0, 1))
+        f = np.expand_dims(f, 0)
+    elif constants.face_algo == 'haar':
+        f = frame
+    else:
+        f = None
 
     y, bb = predict_frame(f, gv.model)
     if bb is not None:
         frame = draw_bb(frame, bb)
-
     img1 = Image.fromarray(frame, 'RGB')
     img2 = ImageTk.PhotoImage(img1)
     gv.camera_image = img2
@@ -92,4 +99,5 @@ def main():
     root.mainloop()
 
 
+cap = cv2.VideoCapture(0)
 main()

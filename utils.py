@@ -4,6 +4,7 @@ import numpy as np
 import dlib
 import cv2
 from PIL import Image
+import constants
 
 
 def load_model():
@@ -49,15 +50,29 @@ def find_face_simple(image):
             largest_face_rectangle.right(), largest_face_rectangle.bottom()]
 
 
+def find_face_haarcascades(image):
+    face_cascade = cv2.CascadeClassifier('media/haarcascade_frontalface_default.xml')
+    # eye_cascade = cv2.CascadeClassifier('media/haarcascade_eye.xml')
+    faces = face_cascade.detectMultiScale(image, 1.3, 5)
+    largest_face_rectangle = find_largest_face(faces)
+    return largest_face_rectangle
+
+
 def grab_face(frame):
     w = 640
     h = 480
     good_shape = (256, 256, 3)
 
-    optface = find_face_simple(frame) # left, up, right, down = optface
+    if constants.face_algo == 'dlib':
+        optface = find_face_simple(frame)  # left, up, right, down = optface
+    elif constants.face_algo == 'haar':
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        optface = find_face_haarcascades(gray)
+    else:
+        optface = None
 
     if optface is not None:
-        print('before ', optface)
+        # print('before ', optface)
         if optface[3] > h:
             optface[3] = h
         if optface[2] > w:
@@ -66,9 +81,13 @@ def grab_face(frame):
             optface[1] = 1
         if optface[0] < 0:
             optface[0] = 1
-        print('after', optface)
+        # print('after', optface)
 
-        image = np.transpose(frame[0], (1, 2, 0)).astype(np.uint8)
+        print(frame.shape)
+        if constants.face_algo == 'dlib':
+            image = np.transpose(frame[0], (1, 2, 0)).astype(np.uint8)
+        else:
+            image = frame
         img = Image.fromarray(image, mode='RGB')
         img = img.crop(optface)  # left, upper, right, and lower
         # img.save('eee.jpg')
@@ -84,13 +103,18 @@ def grab_face(frame):
                 px_mean /= (img.shape[0] * img.shape[1])
                 # print(type(px_mean), px_mean)
             except IndexError:
+                print(px_mean)
                 print(img.shape)
                 print('hmm')
 
             # px_mean = np.mean(img, 2)
             # px_mean = np.mean(px_mean, 2)
 
-            canvas = np.ones(good_shape, dtype=img.dtype) * px_mean.astype(np.uint8)
+            canvas = np.ones(good_shape, dtype=img.dtype)
+            try:
+                canvas = canvas * px_mean.astype(np.uint8)
+            except AttributeError:
+                print('attribute error for px_mean astype')
 
             img2 = Image.fromarray(img, mode='RGB')
 

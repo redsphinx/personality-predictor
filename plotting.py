@@ -34,8 +34,7 @@ def make_plot(gv):
     axs[4].tick_params(axis='y', which='both', right=False, left=False, labelleft=False)
     axs[4].tick_params(axis='x', which='both', top=False, bottom=False, labelbottom=False)
 
-
-    location = '/home/gabi/PycharmProjects/visualizing-traits/src/live_demo/plots/traits.png'
+    location = 'media/traits.png'
     fig.savefig(location)
     # time.sleep(0.1)
 
