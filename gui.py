@@ -53,12 +53,15 @@ def main_loop(gv):
         f = np.expand_dims(f, 0)
     elif constants.face_algo == 'haar':
         f = frame
+    elif constants.face_algo is None:
+        f = frame
     else:
         f = None
 
     y, bb = predict_frame(f, gv.model)
     if bb is not None:
         frame = draw_bb(frame, bb)
+
     img1 = Image.fromarray(frame, 'RGB')
     img2 = ImageTk.PhotoImage(img1)
     gv.camera_image = img2
@@ -78,6 +81,7 @@ def main_loop(gv):
 def start_everything(gv):
     main_loop(gv)
     interval = 20
+    # interval = 10
 
     if gv.keep_going:
         gv.root.after(interval, lambda: start_everything(gv))

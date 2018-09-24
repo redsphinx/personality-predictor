@@ -9,8 +9,9 @@ import constants
 
 def load_model():
     model = Deepimpression()
-    # load weights from epoch_29_34
-    p = 'media/epoch_29_34'
+    # load weights
+    # p = 'media/epoch_29_34'  # face only model
+    p = 'media/epoch_99_32'  # face+bg model
     chainer.serializers.load_npz(p, model)
     return model
 
@@ -149,8 +150,15 @@ def grab_face(frame):
 
 
 def predict_frame(data, model):
-    data, bb = grab_face(data)
-    data = data.astype(np.float32)
+    if constants.face_algo is not None:
+        data, bb = grab_face(data)
+        data = data.astype(np.float32)
+    else:
+        data = data.astype(np.float32)
+        data = np.transpose(data, (2, 0, 1))
+        data = np.expand_dims(data, 0)
+        bb = None
+
     with chainer.using_config('train', False):
         p = model(data)
         # print(p)
